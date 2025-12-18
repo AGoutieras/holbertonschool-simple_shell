@@ -3,7 +3,6 @@
 int main(void)
 {
 	char **av, *line = NULL;
-	int i;
 	size_t len = 0;
 	ssize_t nread;
 	pid_t pid;
@@ -42,6 +41,7 @@ int main(void)
 			perror("fork");
 		free(av);
 	}
+	return (0);
 }
 
 char **line_to_av(char *line)
