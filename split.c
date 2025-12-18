@@ -13,7 +13,7 @@ split_t dll2split(list_t *head, size_t size)
 	size_t i;
 
 	buf = (char **)malloc(sizeof(char *) * size + 1);
-	for (i = 0; (i < size) && head; ++i)
+	for (i = 0; (i < size); ++i)
 	{
 		buf[i] = head->data;
 		if (!head->next)
@@ -57,8 +57,13 @@ split_t split(char *string, char *sep)
 		new = (list_t *)malloc(sizeof(list_t));
 		new->data = tok_cpy;
 		new->len = tok_len;
+		new->next = NULL;
+		new->prev = NULL;
 		if (current)
+		{
 			current->next = new;
+			new->prev = current;
+		}
 		else
 			head = new;
 		current = new;

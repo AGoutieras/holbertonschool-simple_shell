@@ -16,7 +16,7 @@ int starts_with(const char *s, const char *prefix)
  * @filename: The name of the file to find
  * Return: A string of the absolute path
 */
-char *find(const char *filename, char *PATH)
+char *find(char *filename, char *PATH)
 {
 	split_t res;
 	size_t i = 0;
@@ -56,7 +56,7 @@ char *find(const char *filename, char *PATH)
 	}
 	free(nPATH);
 	free_split(&res);
-	return (NULL);
+	return (filename);
 }
 
 /**
@@ -128,10 +128,13 @@ int main(int argc, char **argv, char **env)
 		size_t size = 0;
 		split_t res = {0};
 		char *found = NULL;
+		size_t linelen = 0;
 
 		printf("($) ");
 		getline(&line, &size, stdin);
-		line[strlen(line) - 1] = 0;
+		linelen = strlen(line) - 1;
+		if(linelen <= 0) continue;
+		line[linelen] = 0;
 		res = split(line, " ");
 		if (strcmp(res.data[0], "exit") == 0)
 		{
