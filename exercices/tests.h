@@ -8,6 +8,8 @@
 #include <string.h>
 #include <sys/wait.h>
 
+extern char **environ;
+
 char **line_to_av(char *line);
 
 #endif
