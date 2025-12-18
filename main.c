@@ -26,15 +26,13 @@ char *find(const char *filename, char *PATH)
 	PATH = PATH + 5; /*Skips 'PATH='*/
 	nPATH = malloc(strlen(PATH));
 	strcpy(nPATH, PATH);
-
 	res = split(nPATH, ":");
-	
 	for (; i < res.len; ++i)
 	{
 		size_t datalen = strlen(res.data[i]);
 		char *str = malloc(datalen + 1 + strlen(filename));
 		size_t it = 0;
-		
+
 		while (res.data[i][it] != 0)
 		{
 			str[it] = res.data[i][it];
@@ -48,19 +46,17 @@ char *find(const char *filename, char *PATH)
 			++it;
 		}
 		str[datalen + it + 1] = 0;
-
 		if (stat(str, &st) != -1)
 		{
 			free(nPATH);
 			free_split(&res);
-			return str;
+			return (str);
 		}
 		free(str);
 	}
-
 	free(nPATH);
 	free_split(&res);
-	return NULL;
+	return (NULL);
 }
 
 /**
@@ -117,13 +113,13 @@ int main(int argc, char **argv, char **env)
 	(void)argc;
 	(void)argv;
 
-	for(; env[i] != 0; ++i)
+	for (; env[i] != 0; ++i)
 	{
-		if(starts_with(env[i], "PATH="))
+		if (starts_with(env[i], "PATH="))
 		{
 			PATH = env[i];
 			break;
-		}	
+		}
 	}
 
 	while (1)
@@ -131,7 +127,7 @@ int main(int argc, char **argv, char **env)
 		char *line = NULL;
 		size_t size = 0;
 		split_t res = {0};
-		char* found = NULL;
+		char *found = NULL;
 
 		printf("($) ");
 		getline(&line, &size, stdin);

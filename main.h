@@ -26,7 +26,7 @@ typedef struct list_t
 
 /**
  * split_t - Result of split operation
- * @data: The array of strings, null terminated 
+ * @data: The array of strings, null terminated
  * @len: The length of the array.
  *
 */
