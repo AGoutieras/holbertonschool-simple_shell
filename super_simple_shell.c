@@ -1,22 +1,22 @@
 #include "main.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
 	char **av, *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
 	pid_t pid;
 
+	(void)argc;
+
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
 			printf("$ ");
-
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
 			break;
 		av = line_to_av(line);
-
 		if (av[0] == NULL)
 		{
 			free(av);
@@ -24,7 +24,7 @@ int main(void)
 		}
 		if (access(av[0], X_OK) == -1)
 		{
-			perror(av[0]);
+			fprintf(stderr, "%s: 1: %s not found\n", argv[0], av[0]);
 			free(av);
 			continue;
 		}
