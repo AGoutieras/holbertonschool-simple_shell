@@ -57,6 +57,8 @@ split_t split(char *string, char *sep)
 		new = (list_t *)malloc(sizeof(list_t));
 		new->data = tok_cpy;
 		new->len = tok_len;
+		new->next = NULL;
+		new->prev = NULL;
 		if (current)
 			current->next = new;
 		else

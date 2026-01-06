@@ -24,7 +24,7 @@ char *find(const char *filename, char *PATH)
 	char *nPATH;
 
 	PATH = PATH + 5; /*Skips 'PATH='*/
-	nPATH = malloc(strlen(PATH));
+	nPATH = malloc(strlen(PATH) + 1);
 	strcpy(nPATH, PATH);
 
 	res = split(nPATH, ":");
@@ -134,16 +134,31 @@ int main(int argc, char **argv, char **env)
 		char* found = NULL;
 
 		printf("($) ");
-		getline(&line, &size, stdin);
-		line[strlen(line) - 1] = 0;
+		if(getline(&line, &size, stdin) == -1)
+		{
+			free(line);
+			return (-1);
+		}
+		if(strlen(line) > 0)
+			line[strlen(line) - 1] = 0;
 		res = split(line, " ");
 		if (strcmp(res.data[0], "exit") == 0)
 		{
+			free(line);
 			free_split(&res);
 			return (0);
 		}
 		found = find(res.data[0], PATH);
-		_exec(found, &res.data[0], env);
+		if(found)
+		{
+			_exec(found, &res.data[0], env);
+			free(found);
+		}else
+		{
+			printf("%s: command not found.", res.data[0]);
+		}
+
+		free(line);
 		free_split(&res);
 	}
 
