@@ -12,7 +12,6 @@ int main(int argc, char **argv)
 	char **av, *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
-	pid_t pid;
 
 	(void)argc;
 
@@ -20,40 +19,84 @@ int main(int argc, char **argv)
 	{
 		if (isatty(STDIN_FILENO))
 			printf("$ ");
-		nread = getline(&line, &len, stdin);
-		if (nread == -1)
-			break;
-		av = line_to_av(line);
-		if (av[0] == NULL)
-		{
-			free(av);
+
+		av = get_command(&line, &len, &nread);
+
+		if (!av)
 			continue;
-		}
-		if (access(av[0], X_OK) == -1)
-		{
-			fprintf(stderr, "%s: 1: %s not found\n", argv[0], av[0]);
-			free(av);
-			continue;
-		}
-		pid = fork();
-		if (pid == 0)
-		{
-			execve(av[0], av, environ);
-			perror(av[0]);
-			exit(1);
-		}
-		else if (pid > 0)
-			wait(NULL);
-		else
-			perror("fork");
-		free(av);
+
+		execute_command(av, argv[0]);
 	}
+
+	free(line);
 	return (0);
 }
 
 /**
- * line_to_av - Converts a line of text into an array of words
- * @line: The input string containing a command line
+ * get_command - Reads a line and converts it to an array of words
+ * @line: Pointer to input buffer
+ * @len: Pointer to buffer size
+ * @nread: Pointer to store number of characters read
+ *
+ * Return: Array of words, or NULL if line is empty.
+ * Exits on EOF (Ctrl+D).
+*/
+
+char **get_command(char **line, size_t *len, ssize_t *nread)
+{
+	char **av;
+
+	*nread = getline(line, len, stdin);
+
+	if (*nread == -1)
+		exit(0);
+
+	av = line_to_av(*line);
+
+	if (!av || !av[0])
+	{
+		free(av);
+		return (NULL);
+	}
+
+		return (av);
+}
+
+/**
+ * execute_command - Forks and executes a command
+ * @av: array of arguments
+ * @shell_name: name of the shell
+*/
+
+void execute_command(char **av, char *shell_name)
+{
+	pid_t pid;
+
+	if (access(av[0], X_OK) == -1)
+	{
+		fprintf(stderr, "%s: 1: %s: not found\n", shell_name, av[0]);
+		free(av);
+		return;
+	}
+
+	pid = fork();
+	if (pid == 0)
+	{
+		execve(av[0], av, environ);
+		perror(av[0]);
+		exit(1);
+	}
+	else if (pid > 0)
+		wait(NULL);
+	else
+		perror("fork");
+
+	free(av);
+}
+
+/**
+ * line_to_av - Splits a line into an array of words
+ * @line: Input string containing a command line
  *
  * Return: A pointer to the NULL-terminated array of strings on success,
  *         or NULL if memory allocation fails.
