@@ -107,7 +107,7 @@ char **line_to_av(char *line)
 	char **av = NULL, *token;
 	int i = 0, capacity = 10;
 
-	av = malloc (capacity * sizeof(char *));
+	av = malloc(capacity * sizeof(char *));
 
 	if (!av)
 		return (NULL);
