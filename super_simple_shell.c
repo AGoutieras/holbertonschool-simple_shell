@@ -22,8 +22,12 @@ int main(int argc, char **argv)
 
 		av = get_command(&line, &len, &nread);
 
-		if (!av)
+		if (av == NULL)
+		{
+			if (nread == -1)
+				break;
 			continue;
+		}
 
 		execute_command(av, argv[0]);
 	}
@@ -49,7 +53,7 @@ char **get_command(char **line, size_t *len, ssize_t *nread)
 	*nread = getline(line, len, stdin);
 
 	if (*nread == -1)
-		exit(0);
+		return (NULL);
 
 	av = line_to_av(*line);
 
