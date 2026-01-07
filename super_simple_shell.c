@@ -1,5 +1,12 @@
 #include "main.h"
 
+/**
+ * main - Simple Shell
+ * @argc: Argument count.
+ * @argv: Argument values.
+ * Return: always 0.
+*/
+
 int main(int argc, char **argv)
 {
 	char **av, *line = NULL;
@@ -43,6 +50,14 @@ int main(int argc, char **argv)
 	}
 	return (0);
 }
+
+/**
+ * line_to_av - Converts a line of text into an array of words
+ * @line: The input string containing a command line
+ *
+ * Return: A pointer to the NULL-terminated array of strings on success,
+ *         or NULL if memory allocation fails.
+*/
 
 char **line_to_av(char *line)
 {
