@@ -104,9 +104,10 @@ void execute_command(char **av, char *shell_name)
 
 char **line_to_av(char *line)
 {
-	char **av = malloc(10 * sizeof(char *));
-	char *token;
-	int i = 0;
+	char **av = NULL, *token;
+	int i = 0, capacity = 10;
+
+	av = malloc (capacity * sizeof(char *));
 
 	if (!av)
 		return (NULL);
@@ -115,6 +116,13 @@ char **line_to_av(char *line)
 
 	while (token != NULL)
 	{
+		if (i >= capacity - 1)
+		{
+			capacity *= 2;
+			av = realloc(av, capacity * sizeof(char *));
+			if (!av)
+				return (NULL);
+		}
 		av[i++] = token;
 		token = strtok(NULL, " \t\n");
 	}
