@@ -19,11 +19,11 @@ int main(int argc, char **argv)
 	{
 		if (isatty(STDIN_FILENO))
 			printf("$ ");
-
+		fflush(stdout);
 		av = get_command(&line, &len, &nread);
 
 		if (!av)
-			continue;
+			break;
 
 		execute_command(av, argv[0]);
 	}
@@ -49,7 +49,7 @@ char **get_command(char **line, size_t *len, ssize_t *nread)
 	*nread = getline(line, len, stdin);
 
 	if (*nread == -1)
-		exit(0);
+		return (NULL);
 
 	av = line_to_av(*line);
 
@@ -70,9 +70,11 @@ char **get_command(char **line, size_t *len, ssize_t *nread)
 
 void execute_command(char **av, char *shell_name)
 {
+	char *path;
 	pid_t pid;
 
-	if (access(av[0], X_OK) == -1)
+	path = get_full_path(av[0]);
+	if (!path)
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", shell_name, av[0]);
 		free(av);
@@ -82,8 +84,8 @@ void execute_command(char **av, char *shell_name)
 	pid = fork();
 	if (pid == 0)
 	{
-		execve(av[0], av, environ);
-		perror(av[0]);
+		execve(path, av, environ);
+		perror(shell_name);
 		exit(1);
 	}
 	else if (pid > 0)
@@ -91,6 +93,7 @@ void execute_command(char **av, char *shell_name)
 	else
 		perror("fork");
 
+	free(path);
 	free(av);
 }
 
@@ -129,4 +132,56 @@ char **line_to_av(char *line)
 	av[i] = NULL;
 
 	return (av);
+}
+
+/**
+ * get_full_path - Resolves a command to its full executable path
+ * @command: command to locate
+ *
+ * Return: A newly allocated string containing the full path if found,
+ *         or NULL if the command cannot be found or is not executable.
+*/
+
+char *get_full_path(char *command)
+{
+	char *path_env, *path_copy, *dir, *full_path;
+	int i;
+
+	if (!command)
+		return (NULL);
+	for (i = 0; command[i]; i++)
+	{
+		if (command[i] == '/')
+		{
+			if (access(command, X_OK) == 0)
+				return (strdup(command));
+			return (NULL);
+		}
+	}
+	path_env = getenv("PATH");
+	if (!path_env)
+		return (NULL);
+	path_copy = strdup(path_env);
+	if (!path_copy)
+		return (NULL);
+	dir = strtok(path_copy, ":");
+	while (dir)
+	{
+		full_path = malloc(strlen(dir) + strlen(command) + 2);
+		if (!full_path)
+		{
+			free(path_copy);
+			return (NULL);
+		}
+		sprintf(full_path, "%s/%s", dir, command);
+		if (access(full_path, X_OK) == 0)
+		{
+			free(path_copy);
+			return (full_path);
+		}
+		free(full_path);
+		dir = strtok(NULL, ":");
+	}
+	free(path_copy);
+	return (NULL);
 }
