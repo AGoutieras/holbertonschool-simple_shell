@@ -12,7 +12,7 @@ extern char **environ;
 
 char **line_to_av(char *line);
 char **get_command(char **line, size_t *len, ssize_t *nread);
-void execute_command(char **av, char *shell_name);
+void execute_command(char **av, char *shell_name, int *last_status);
 char *get_full_path(char *command);
 
 #endif
