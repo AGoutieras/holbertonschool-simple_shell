@@ -25,6 +25,13 @@ int main(int argc, char **argv)
 		if (!av)
 			break;
 
+		if (strcmp(av[0], "exit") == 0)
+		{
+			free(av);
+			free(line);
+			exit(0);
+		}
+
 		execute_command(av, argv[0]);
 	}
 
@@ -203,4 +210,3 @@ char *get_full_path(char *command)
 	free(path_copy);
 	return (NULL);
 }
-
