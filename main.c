@@ -1,4 +1,5 @@
 #include "main.h"
+#include <ctype.h>
 
 /**
  * find - Finds the absolute path of an executable
@@ -9,12 +10,13 @@ char *find(const char *filename, char *PATH)
 {
 	split_t res;
 	size_t i = 0;
-	struct stat st;
 	char *nPATH;
+	char *oPATH;
 
 	PATH = PATH + 5; /*Skips 'PATH='*/
-	nPATH = malloc(strlen(PATH) + 1);
-	strcpy(nPATH, PATH);
+	oPATH = malloc(strlen(PATH) + 1);
+	strcpy(oPATH, PATH);
+	nPATH = oPATH;
 	res = split(nPATH, ":");
 	for (; i < res.len; ++i)
 	{
@@ -35,15 +37,15 @@ char *find(const char *filename, char *PATH)
 			++it;
 		}
 		str[datalen + it + 1] = 0;
-		if (stat(str, &st) != -1)
+		if (access(str, X_OK) != -1)
 		{
-			free(nPATH);
+			free(oPATH);
 			free_split(&res);
 			return (str);
 		}
 		free(str);
 	}
-	free(nPATH);
+	free(oPATH);
 	free_split(&res);
 	return (NULL);
 }
@@ -56,6 +58,8 @@ char *find(const char *filename, char *PATH)
 */
 int exec_builtin(split_t *data, char **env)
 {
+	if (!data->data[0])
+		return (0);
 	if (strcmp(data->data[0], "exit") == 0)
 	{
 		free_split(data);
@@ -122,6 +126,52 @@ int _exec(split_t *data, char *PATH, char **argv, char **env)
 }
 
 /**
+ * handle_commands - Executes commands from prompt
+ * @env: Program env
+ * @PATH: Env PATH
+ * Return: Status
+*/
+int handle_commands(char **env, char *PATH)
+{
+	while (1)
+	{
+		char *line = NULL;
+		char *it = NULL;
+		size_t size = 0;
+		split_t res = {0};
+
+		if (isatty(STDIN_FILENO))
+			printf("($) ");
+		if (getline(&line, &size, stdin) == -1)
+		{
+			if (isatty(STDIN_FILENO))
+				printf("\n");
+			free(line);
+			return (0);
+		}
+		if (strlen(line) > 0)
+			line[strlen(line) - 1] = 0;
+		it = line;
+		while (*it != 0 && isspace(*it))
+		{
+			++it;
+		}
+		if (*it == 0)
+		{
+			free(line);
+			continue;
+		}
+		res = split(line, " ");
+		free(line);
+		if (exec_builtin(&res, env) < 0)
+		{
+			_exec(&res, PATH, &res.data[0], env);
+		}
+		free_split(&res);
+	}
+}
+
+/**
  * main - Simple Shell, read code
  * @argc: Argument count.
  * @argv: Argument values.
@@ -143,28 +193,5 @@ int main(int argc, char **argv, char **env)
 			break;
 		}
 	}
-	while (1)
-	{
-		char *line = NULL;
-		size_t size = 0;
-		split_t res = {0};
-
-		if (isatty(STDIN_FILENO))
-			printf("($) ");
-		if (getline(&line, &size, stdin) == -1)
-		{
-			free(line);
-			return (0);
-		}
-		if (strlen(line) > 0)
-			line[strlen(line) - 1] = 0;
-		res = split(line, " ");
-		free(line);
-		if (exec_builtin(&res, env) < 0)
-		{
-			_exec(&res, PATH, &res.data[0], env);
-		}
-		free_split(&res);
-	}
-	return (0);
+	return (handle_commands(env, PATH));
 }
