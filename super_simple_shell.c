@@ -144,44 +144,45 @@ char **line_to_av(char *line)
 
 char *get_full_path(char *command)
 {
-	char *path_env, *path_copy, *dir, *full_path;
+	char *dir, *full_path, *path_copy;
 	int i;
 
-	if (!command)
-		return (NULL);
 	for (i = 0; command[i]; i++)
-	{
 		if (command[i] == '/')
-		{
-			if (access(command, X_OK) == 0)
-				return (strdup(command));
-			return (NULL);
-		}
-	}
-	path_env = getenv("PATH");
-	if (!path_env)
+			return (access(command, X_OK) == 0 ? strdup(command) : NULL);
+
+	for (i = 0; environ[i]; i++)
+		if (!strncmp(environ[i], "PATH=", 5))
+			break;
+
+	if (!environ[i])
 		return (NULL);
-	path_copy = strdup(path_env);
+
+	path_copy = strdup(environ[i] + 5);
+
 	if (!path_copy)
 		return (NULL);
+
 	dir = strtok(path_copy, ":");
+
 	while (dir)
 	{
 		full_path = malloc(strlen(dir) + strlen(command) + 2);
+
 		if (!full_path)
-		{
-			free(path_copy);
-			return (NULL);
-		}
+			return (free(path_copy), NULL);
+
 		sprintf(full_path, "%s/%s", dir, command);
+
 		if (access(full_path, X_OK) == 0)
-		{
-			free(path_copy);
-			return (full_path);
-		}
+			return (free(path_copy), full_path);
+
 		free(full_path);
+
 		dir = strtok(NULL, ":");
 	}
+
 	free(path_copy);
 	return (NULL);
 }
+
