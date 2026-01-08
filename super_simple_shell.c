@@ -12,6 +12,7 @@ int main(int argc, char **argv)
 	char **av, *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
+	int last_status = 0;
 
 	(void)argc;
 
@@ -29,14 +30,14 @@ int main(int argc, char **argv)
 		{
 			free(av);
 			free(line);
-			exit(0);
+			exit(last_status);
 		}
 
-		execute_command(av, argv[0]);
+		execute_command(av, argv[0], &last_status);
 	}
 
 	free(line);
-	return (0);
+	return (last_status);
 }
 
 /**
@@ -91,18 +92,21 @@ char **get_command(char **line, size_t *len, ssize_t *nread)
  * execute_command - Forks and executes a command
  * @av: array of arguments
  * @shell_name: name of the shell
+ * @last_status: Stores the exit status of the last executed command
 */
 
-void execute_command(char **av, char *shell_name)
+void execute_command(char **av, char *shell_name, int *last_status)
 {
 	char *path;
 	pid_t pid;
+	int status;
 
 	path = get_full_path(av[0]);
 	if (!path)
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", shell_name, av[0]);
 		free(av);
+		*last_status = 127;
 		return;
 	}
 
@@ -114,7 +118,13 @@ void execute_command(char **av, char *shell_name)
 		exit(1);
 	}
 	else if (pid > 0)
-		wait(NULL);
+	{
+		wait(&status);
+		if (WIFEXITED(status))
+			*last_status = WEXITSTATUS(status);
+		else
+			*last_status = 1;
+	}
 	else
 		perror("fork");
 
