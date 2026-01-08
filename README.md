@@ -42,7 +42,7 @@ Example valgrind result:
 ==368== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
 ==368== Command: ./hsh
 ==368== 
-==368== 
+$ ==368== 
 ==368== HEAP SUMMARY:
 ==368==     in use at exit: 0 bytes in 0 blocks
 ==368==   total heap usage: 3 allocs, 3 frees, 2,168 bytes allocated
@@ -61,6 +61,26 @@ Example valgrind result:
 | main.h             | Header file with prototypes and libraries                              |
 | shell_utils.c      | Helper functions : handle_builtin and print_env                        |
 | man_1_simple_shell | Manual page for the shell                                              |
+
+#### Usage
+- Interactive mode
+```bash
+./hsh
+$ ls
+$ env
+$ exit
+```
+- Non-interactive mode
+```bash
+echo ls -la | ./hsh
+```
+
+#### Built-in commands
+
+| Command | Description                         |
+|---------|-------------------------------------|
+|*exit*    | Exit the shell                      |
+| *env*     | Print current environment variables |
 
 #### Flowchart
 
