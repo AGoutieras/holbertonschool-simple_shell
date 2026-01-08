@@ -133,11 +133,12 @@ int main(int argc, char **argv, char **env)
 		split_t res = {0};
 		char* found = NULL;
 
-		printf("($) ");
+		if(isatty(STDIN_FILENO))
+			printf("($) ");
 		if(getline(&line, &size, stdin) == -1)
 		{
 			free(line);
-			return (-1);
+			return (0);
 		}
 		if(strlen(line) > 0)
 			line[strlen(line) - 1] = 0;
