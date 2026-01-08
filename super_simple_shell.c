@@ -26,6 +26,12 @@ int main(int argc, char **argv)
 		if (!av)
 			break;
 
+		if (!av[0])
+		{
+			free(av);
+			continue;
+		}
+
 		if (handle_builtin(av, &last_status, line))
 			continue;
 
@@ -42,8 +48,8 @@ int main(int argc, char **argv)
  * @len: Pointer to buffer size
  * @nread: Pointer to store number of characters read
  *
- * Return: Array of words, or NULL if line is empty.
- * Exits on EOF (Ctrl+D).
+ * Return: Array of words,
+ *		   or NULL on EOF (Ctrl+D).
 */
 
 char **get_command(char **line, size_t *len, ssize_t *nread)
@@ -70,17 +76,12 @@ char **get_command(char **line, size_t *len, ssize_t *nread)
 		line_start[--l] = '\0';
 	}
 
-		if (!line_start)
-			return (NULL);
-
 	av = line_to_av(line_start);
 
-	if (!av || !av[0])
+	if (!av)
 	{
-		free(av);
 		return (NULL);
 	}
-
 		return (av);
 }
 
