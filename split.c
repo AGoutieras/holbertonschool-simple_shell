@@ -85,3 +85,14 @@ void free_split(split_t *res)
 	}
 	free(res->data);
 }
+
+/**
+ * starts_with - Checks if a string starts with a certain prefix
+ * @s: The string to check
+ * @prefix: The prefix
+ * Return: 1 on sucess, 0 otherwise
+*/
+int starts_with(const char *s, const char *prefix)
+{
+	return (strncmp(prefix, s, strlen(prefix)) == 0);
+}

@@ -38,5 +38,6 @@ typedef struct split_t
 
 split_t split(char *string, char *sep);
 void free_split(split_t *res);
+int starts_with(const char *s, const char *prefix);
 
 #endif

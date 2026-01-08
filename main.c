@@ -1,17 +1,6 @@
 #include "main.h"
 
 /**
- * starts_with - Checks if a string starts with a certain prefix
- * @s: The string to check
- * @prefix: The prefix
- * Return: 1 on sucess, 0 otherwise
-*/
-int starts_with(const char *s, const char *prefix)
-{
-	return (strncmp(prefix, s, strlen(prefix)) == 0);
-}
-
-/**
  * find - Finds the absolute path of an executable
  * @filename: The name of the file to find
  * Return: A string of the absolute path
@@ -26,15 +15,13 @@ char *find(const char *filename, char *PATH)
 	PATH = PATH + 5; /*Skips 'PATH='*/
 	nPATH = malloc(strlen(PATH) + 1);
 	strcpy(nPATH, PATH);
-
 	res = split(nPATH, ":");
-	
 	for (; i < res.len; ++i)
 	{
 		size_t datalen = strlen(res.data[i]);
 		char *str = malloc(datalen + 1 + strlen(filename));
 		size_t it = 0;
-		
+
 		while (res.data[i][it] != 0)
 		{
 			str[it] = res.data[i][it];
@@ -48,19 +35,42 @@ char *find(const char *filename, char *PATH)
 			++it;
 		}
 		str[datalen + it + 1] = 0;
-
 		if (stat(str, &st) != -1)
 		{
 			free(nPATH);
 			free_split(&res);
-			return str;
+			return (str);
 		}
 		free(str);
 	}
-
 	free(nPATH);
 	free_split(&res);
-	return NULL;
+	return (NULL);
+}
+
+/**
+ * exec_builtin - Checks and runs buitlin functions.
+ * @data: The command line arguments and command
+ * @env: The environment of the program.
+ * Return: < 0 on failure, > 0 otherwise
+*/
+int exec_builtin(split_t *data, char **env)
+{
+	if (strcmp(data->data[0], "exit") == 0)
+	{
+		free_split(data);
+		exit(0);
+	}
+	else if (strcmp(data->data[0], "env") == 0)
+	{
+		while (*env)
+		{
+			printf("%s\n", *env);
+			++env;
+		}
+		return (0);
+	}
+	return (-1);
 }
 
 /**
@@ -69,14 +79,21 @@ char *find(const char *filename, char *PATH)
  * @argv: The arguments to pass to the program
  * Return: 1 on success, 0 otherwise
 */
-int _exec(const char *filepath, char **argv, char **env)
+int _exec(split_t *data, char *PATH, char **argv, char **env)
 {
-	struct stat st;
 	pid_t child;
+	char *found = NULL;
 
-	if (!filepath || stat(filepath, &st) == -1)
+	found = find(data->data[0], PATH);
+	if (!found)
 	{
-		printf("%s: no such file or directory\n", filepath);
+		printf("%s: command not found.", data->data[0]);
+		return (0);
+	}
+
+	if (access(found, X_OK) == -1)
+	{
+		printf("%s: no such file or directory\n", found);
 		return (0);
 	}
 
@@ -91,14 +108,15 @@ int _exec(const char *filepath, char **argv, char **env)
 	{
 		int err;
 
-		err = execve(filepath, argv, env);
+		err = execve(found, argv, env);
 		if (err == -1)
 		{
-			printf("%s: couldn't execute program.\n", filepath);
+			printf("%s: couldn't execute program.\n", found);
 			return (0);
 		}
 	}
 
+	free(found);
 	wait(NULL);
 	return (1);
 }
@@ -114,54 +132,39 @@ int main(int argc, char **argv, char **env)
 {
 	char *PATH = NULL;
 	size_t i = 0;
+
 	(void)argc;
 	(void)argv;
-
-	for(; env[i] != 0; ++i)
+	for (; env[i] != 0; ++i)
 	{
-		if(starts_with(env[i], "PATH="))
+		if (starts_with(env[i], "PATH="))
 		{
 			PATH = env[i];
 			break;
-		}	
+		}
 	}
-
 	while (1)
 	{
 		char *line = NULL;
 		size_t size = 0;
 		split_t res = {0};
-		char* found = NULL;
 
-		if(isatty(STDIN_FILENO))
+		if (isatty(STDIN_FILENO))
 			printf("($) ");
-		if(getline(&line, &size, stdin) == -1)
+		if (getline(&line, &size, stdin) == -1)
 		{
 			free(line);
 			return (0);
 		}
-		if(strlen(line) > 0)
+		if (strlen(line) > 0)
 			line[strlen(line) - 1] = 0;
 		res = split(line, " ");
-		if (strcmp(res.data[0], "exit") == 0)
-		{
-			free(line);
-			free_split(&res);
-			return (0);
-		}
-		found = find(res.data[0], PATH);
-		if(found)
-		{
-			_exec(found, &res.data[0], env);
-			free(found);
-		}else
-		{
-			printf("%s: command not found.", res.data[0]);
-		}
-
 		free(line);
+		if (exec_builtin(&res, env) < 0)
+		{
+			_exec(&res, PATH, &res.data[0], env);
+		}
 		free_split(&res);
 	}
-
 	return (0);
 }
