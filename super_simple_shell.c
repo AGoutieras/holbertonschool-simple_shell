@@ -45,13 +45,31 @@ int main(int argc, char **argv)
 char **get_command(char **line, size_t *len, ssize_t *nread)
 {
 	char **av;
+	char *line_start;
+	size_t l;
 
 	*nread = getline(line, len, stdin);
 
 	if (*nread == -1)
 		return (NULL);
 
-	av = line_to_av(*line);
+	line_start = *line;
+
+	while (*line_start && (*line_start == ' ' || *line_start == '\t'))
+		line_start++;
+
+	l = strlen(line_start);
+	while (l > 0 && (line_start[l - 1] == ' ' ||
+					 line_start[l - 1] == '\t' ||
+					 line_start[l - 1] == '\n'))
+	{
+		line_start[--l] = '\0';
+	}
+
+		if (!line_start)
+			return (NULL);
+
+	av = line_to_av(line_start);
 
 	if (!av || !av[0])
 	{
