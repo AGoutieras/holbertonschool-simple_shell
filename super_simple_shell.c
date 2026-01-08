@@ -26,12 +26,8 @@ int main(int argc, char **argv)
 		if (!av)
 			break;
 
-		if (strcmp(av[0], "exit") == 0)
-		{
-			free(av);
-			free(line);
-			exit(last_status);
-		}
+		if (handle_builtin(av, &last_status, line))
+			continue;
 
 		execute_command(av, argv[0], &last_status);
 	}
@@ -100,6 +96,8 @@ void execute_command(char **av, char *shell_name, int *last_status)
 	char *path;
 	pid_t pid;
 	int status;
+
+
 
 	path = get_full_path(av[0]);
 	if (!path)
