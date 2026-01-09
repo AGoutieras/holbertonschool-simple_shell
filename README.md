@@ -84,6 +84,8 @@ echo ls -la | ./hsh
 
 #### Flowchart
 
+![Logo Markdown](./images/simple_shell_graph.svg)
+
 ### Authors
 
 - [Anthony Goutieras](https://github.com/AGoutieras)  
