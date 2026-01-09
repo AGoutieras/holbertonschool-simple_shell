@@ -1,12 +1,27 @@
 .TH SHELL 1 "December 2025" "Holberton School" "Simple Shell Manual"
 
 .SH NAME
+hsh - A command prompt
 
 .SH SYNOPSIS
+hsh : To enter interactive mode
+echo [command] | hsh : To execute commands in non-intaractive mode
 
 .SH DESCRIPTION
+A simple shell that executes commands and executables from user or scripts input
+
+Input is fetched directly from STDIN, then tokenized and interpreted.
+
+The shell currently supports two builtins:
+
+exit : Exits the shell.
+env : Prints the environment variables
+
+It also supports searching through the path to execute other commands
 
 .SH SEE ALSO
+bash(1)
+sh(1)
 
 .SH AUTHORS
 Anthony Goutieras and Gabriel De Vasselot
